@@ -5,7 +5,8 @@ import shutil
 import subprocess
 import sys
 
-from lib.util import get_electron_branding, rm_rf
+from lib.config import enable_verbose_mode, is_verbose_mode
+from lib.util import execute_stdout, get_electron_branding, rm_rf
 
 PROJECT_NAME = get_electron_branding()['project_name']
 PRODUCT_NAME = get_electron_branding()['product_name']
@@ -13,10 +14,16 @@ SOURCE_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 def main():
   args = parse_args()
+  if args.verbose:
+    enable_verbose_mode()
 
   source_root = os.path.abspath(args.source_root)
   initial_app_path = os.path.join(source_root, args.build_dir)
+  if is_verbose_mode():
+    print 'Creating copy of app located at:' +initial_app_path
   app_path = create_app_copy(initial_app_path)
+  if is_verbose_mode():
+    print 'Created copy of app at:' +app_path
 
   if sys.platform == 'darwin':
     electron = os.path.join(app_path, 'Contents', 'MacOS', PRODUCT_NAME)
@@ -36,22 +43,33 @@ def main():
   # Copy ffmpeg without proprietary codecs into app.
   ffmpeg_lib_path = os.path.join(source_root, args.ffmpeg_path, ffmpeg_name)
   shutil.copy(ffmpeg_lib_path, ffmpeg_app_path)
+  if is_verbose_mode():
+    print 'Copied {0} to {1}'.format(ffmpeg_lib_path, ffmpeg_app_path)
 
   returncode = 0
   try:
     test_path = os.path.join(SOURCE_ROOT, 'spec', 'fixtures',
         'no-proprietary-codecs.js')
-    env = dict(os.environ)
+    env = os.environ.copy()
     env['ELECTRON_ENABLE_STACK_DUMPING'] = 'true'
     env['ELECTRON_ENABLE_LOGGING'] = 'true'
-    subprocess.check_call([electron, test_path] + sys.argv[1:], env=env)
+
+    if is_verbose_mode():
+      print 'About to execute non-proprietary ffmpeg test'
+    execute_stdout([electron, test_path] + sys.argv[1:], env=env)
+    if is_verbose_mode():
+      print 'Done executing non-proprietary ffmpeg test'
   except subprocess.CalledProcessError as e:
+    if is_verbose_mode():
+      print 'Error returned from non-proprietary ffmpeg test: ' + e.returncode
     returncode = e.returncode
   except KeyboardInterrupt:
     returncode = 0
 
   if returncode == 0:
     print 'ok Non proprietary ffmpeg does not contain proprietary codes.'
+  else:
+    print 'Error returned from non-proprietary ffmpeg test: ' + returncode
   return returncode
 
 
@@ -85,6 +103,9 @@ def parse_args():
                           Relative to the --source-root.',
                       default=None,
                       required=True)
+  parser.add_argument('-v', '--verbose',
+                      action='store_true',
+                      help='Prints the output of the subprocesses')
   return parser.parse_args()
 
 if __name__ == '__main__':
