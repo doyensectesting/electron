@@ -430,41 +430,34 @@ describe('app module', () => {
       }
     })
 
-    beforeEach(() => {
-      app.setLoginItemSettings({ openAtLogin: false })
-      app.setLoginItemSettings({ openAtLogin: false, path: updateExe, args: processStartArgs })
-    })
-
-    afterEach(() => {
-      app.setLoginItemSettings({ openAtLogin: false })
-      app.setLoginItemSettings({ openAtLogin: false, path: updateExe, args: processStartArgs })
-    })
+    beforeEach(() => app.removeFromLoginItems())
+    afterEach(() => app.removeFromLoginItems())
 
     it('returns the login item status of the app', done => {
-      app.setLoginItemSettings({ openAtLogin: true })
+      app.addToLoginItems({ openAsHidden: false })
       expect(app.getLoginItemSettings()).to.deep.equal({
-        openAtLogin: true,
+        isLoginItem: true,
         openAsHidden: false,
         wasOpenedAtLogin: false,
         wasOpenedAsHidden: false,
         restoreState: false
       })
 
-      app.setLoginItemSettings({ openAtLogin: true, openAsHidden: true })
+      app.addToLoginItems({ openAsHidden: true })
       expect(app.getLoginItemSettings()).to.deep.equal({
-        openAtLogin: true,
+        isLoginItem: true,
         openAsHidden: process.platform === 'darwin' && !process.mas, // Only available on macOS
         wasOpenedAtLogin: false,
         wasOpenedAsHidden: false,
         restoreState: false
       })
 
-      app.setLoginItemSettings({})
       // Wait because login item settings are not applied immediately in MAS build
+      app.removeFromLoginItems()
       const delay = process.mas ? 100 : 0
       setTimeout(() => {
         expect(app.getLoginItemSettings()).to.deep.equal({
-          openAtLogin: false,
+          isLoginItem: false,
           openAsHidden: false,
           wasOpenedAtLogin: false,
           wasOpenedAsHidden: false,
@@ -481,13 +474,12 @@ describe('app module', () => {
         return
       }
 
-      app.setLoginItemSettings({ openAtLogin: true, path: updateExe, args: processStartArgs })
-
-      expect(app.getLoginItemSettings().openAtLogin).to.be.false()
+      app.addToLoginItems({ path: updateExe, args: processStartArgs })
+      expect(app.getLoginItemSettings().isLoginItem).to.be.false()
       expect(app.getLoginItemSettings({
         path: updateExe,
         args: processStartArgs
-      }).openAtLogin).to.be.true()
+      }).isLoginItem).to.be.true()
     })
   })
 
