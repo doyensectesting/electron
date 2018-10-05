@@ -302,7 +302,7 @@ void Browser::AddToLoginItems(LoginItemSettings settings) {
   }
 }
 
-void Browser::RemoveFromLoginItems(LoginItemSettings settings) {
+void Browser::RemoveFromLoginItems() {
   base::string16 keyPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
   base::win::RegKey key(HKEY_CURRENT_USER, keyPath.c_str(), KEY_ALL_ACCESS);
 
