@@ -319,7 +319,7 @@ Browser::LoginItemSettings Browser::GetLoginItemSettings(
   if (!FAILED(key.ReadValue(GetAppUserModelID(), &keyVal))) {
     base::string16 exe = options.path;
     if (FormatCommandLineString(&exe, options.args)) {
-      settings.open_at_login = keyVal == exe;
+      settings.is_login_item = keyVal == exe;
     }
   }
 

@@ -95,7 +95,7 @@ class Browser : public WindowListObserver {
 
   // Set/Get the login item settings of the app
   struct LoginItemSettings {
-    bool open_at_login = false;
+    bool is_login_item = false;
     bool open_as_hidden = false;
     bool restore_state = false;
     bool opened_at_login = false;
