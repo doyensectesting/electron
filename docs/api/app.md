@@ -1004,6 +1004,10 @@ app.addToLoginItems({
 })
 ```
 
+### `app.removeFromLoginItems()` _macOS_ _Windows_
+
+Removes the app from login items.
+
 ### `app.isAccessibilitySupportEnabled()` _macOS_ _Windows_
 
 Returns `Boolean` - `true` if Chrome's accessibility support is enabled,
